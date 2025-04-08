@@ -6,7 +6,7 @@ import pytz
 
 # --- Settings ---
 POINTS_URL = "https://api.weather.gov/points/40.7986,-73.9707"
-RSS_FEED = "https://time.com/feed/"
+RSS_FEED = "https://rss.jpost.com/rss/rssfeedsheadlines.aspx"
 OUTPUT_FILE = "bg_ss00.png"
 KINDLE_SIZE = (1072, 1448)
 
@@ -41,10 +41,9 @@ def get_headlines():
     feed = feedparser.parse(RSS_FEED)
     return [
         {
-            "title": entry["title"],
-            "summary": entry.get("summary", "").strip().replace("\n", " ")[:300]
+            "title": entry.get("title", "").strip()
         }
-        for entry in feed["entries"][:5]
+        for entry in feed.entries[:5]
     ]
 
 def wrap_text(draw, text, font, max_width):
@@ -90,20 +89,16 @@ def render_image(weather, headlines):
     # News Section Header (boxed background)
     header_h = 40
     draw.rectangle([x_pad, y, x_pad + max_width, y + header_h], fill=240)
-    draw.text((x_pad + 10, y + 6), "Latest Headlines from TIME", font=FONT, fill=0)
+    draw.text((x_pad + 10, y + 6), "Latest Headlines from The Jerusalem Post", font=FONT, fill=0)
     y += header_h + 20
 
     # News Items
     for i, article in enumerate(headlines, 1):
-        draw.text((x_pad, y), f"{i}. {article['title'].upper()}", font=FONT, fill=0)
-        y += 32
-
-        summary_lines = wrap_text(draw, f"- {article['summary']}", SMALL, max_width)
-        for line in summary_lines:
-            draw.text((x_pad + 20, y), line, font=SMALL, fill=0)
-            y += 26
-
-        y += 14
+        lines = wrap_text(draw, f"{i}. {article['title']}", FONT, max_width)
+        for line in lines:
+            draw.text((x_pad, y), line, font=FONT, fill=0)
+            y += 30
+        y += 10
         draw.line((x_pad + 10, y, x_pad + max_width - 10, y), fill=220)
         y += 20
 
