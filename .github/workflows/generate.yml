@@ -1,0 +1,35 @@
+name: Generate Weather and News Screenshot
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"  # Every 15 minutes
+  workflow_dispatch:        # Manual trigger option
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          pip install requests pillow feedparser
+
+      - name: Run the script
+        run: python main.py
+
+      - name: Commit and push updated image
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git add bg_ss00.png
+          git commit -m "Update weather and news screenshot" || echo "No changes"
+          git push
