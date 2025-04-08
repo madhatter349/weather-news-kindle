@@ -10,7 +10,7 @@ RSS_FEED = "https://time.com/feed/"
 OUTPUT_FILE = "bg_ss00.png"
 KINDLE_SIZE = (1072, 1448)
 
-# Fonts
+# Load fonts
 try:
     FONT = ImageFont.truetype("DejaVuSans.ttf", 28)
     SMALL = ImageFont.truetype("DejaVuSans.ttf", 22)
@@ -73,47 +73,52 @@ def render_image(weather, headlines):
     # Weather Header
     draw.text((x_pad, y), "Weather Forecast – Upper West Side", font=FONT, fill=0)
     y += 50
-    draw.line((x_pad, y, x_pad + max_width, y), fill=200)
+    draw.line((x_pad, y, x_pad + max_width, y), fill=180)
     y += 20
 
-    # Weather Table (3-column layout)
-    col1_x, col2_x, col3_x = x_pad, x_pad + 160, x_pad + 280
+    # Weather rows
+    col1, col2, col3 = x_pad, x_pad + 160, x_pad + 280
     for entry in weather:
-        draw.text((col1_x, y), entry["time"], font=MONO, fill=0)
-        draw.text((col2_x, y), entry["temp"], font=MONO, fill=0)
-        draw.text((col3_x, y), entry["short"], font=SMALL, fill=0)
+        draw.text((col1, y), entry["time"], font=MONO, fill=0)
+        draw.text((col2, y), entry["temp"].rjust(5), font=MONO, fill=0)
+        draw.text((col3, y), entry["short"], font=SMALL, fill=0)
         y += 36
 
-    y += 30
-    draw.line((x_pad, y, x_pad + max_width, y), fill=200)
-    y += 30
+    # Spacer
+    y += 40
 
-    # Headlines Header
-    draw.text((x_pad, y), "Latest Headlines from TIME", font=FONT, fill=0)
-    y += 50
+    # News Section Header (boxed background)
+    header_h = 40
+    draw.rectangle([x_pad, y, x_pad + max_width, y + header_h], fill=240)
+    draw.text((x_pad + 10, y + 6), "Latest Headlines from TIME", font=FONT, fill=0)
+    y += header_h + 20
 
+    # News Items
     for i, article in enumerate(headlines, 1):
-        draw.text((x_pad, y), f"{i}. {article['title']}", font=SMALL, fill=0)
-        y += 28
+        draw.text((x_pad, y), f"{i}. {article['title'].upper()}", font=FONT, fill=0)
+        y += 32
 
-        for line in wrap_text(draw, article["summary"], SMALL, max_width - 20):
+        summary_lines = wrap_text(draw, f"- {article['summary']}", SMALL, max_width)
+        for line in summary_lines:
             draw.text((x_pad + 20, y), line, font=SMALL, fill=0)
             y += 26
 
-        y += 12
+        y += 14
         draw.line((x_pad + 10, y, x_pad + max_width - 10, y), fill=220)
         y += 20
 
-    # Footer with timestamp
+    # Footer with timestamp (EST)
     now_est = datetime.now(pytz.timezone("America/New_York"))
     timestamp = now_est.strftime("Generated on %a %b %d, %I:%M %p (ET)")
-    draw.text((x_pad, 1020), timestamp, font=SMALL, fill=0)
+    draw.line((x_pad, 1020, x_pad + max_width, 1020), fill=200)
+    draw.text((x_pad, 1025), timestamp, font=SMALL, fill=0)
 
-    # Rotate & Save
+    # Final output
     img = img.rotate(90, expand=True).resize(KINDLE_SIZE)
     img.save(OUTPUT_FILE)
     print(f"✅ Saved Kindle-ready image as {OUTPUT_FILE}")
 
+# --- Main ---
 if __name__ == "__main__":
     weather = get_weather()
     headlines = get_headlines()
