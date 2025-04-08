@@ -1,9 +1,13 @@
-name: Generate Weather and News Screenshot
+name: Generate Weather & News Kindle Image
 
 on:
+  push:
+    paths:
+      - '**.py'
+      - '**.yml'
   schedule:
     - cron: "*/15 * * * *"  # Every 15 minutes
-  workflow_dispatch:        # Manual trigger option
+  workflow_dispatch:
 
 jobs:
   generate:
@@ -21,9 +25,9 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install requests pillow feedparser
+          pip install requests pillow feedparser pytz
 
-      - name: Run the script
+      - name: Run script
         run: python main.py
 
       - name: Commit and push updated image
@@ -31,5 +35,5 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
           git add bg_ss00.png
-          git commit -m "Update weather and news screenshot" || echo "No changes"
+          git commit -m "Update Kindle weather/news image" || echo "No changes"
           git push
